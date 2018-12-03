@@ -1,4 +1,23 @@
 function progressUpdate(packet) {
+    var progressMessage = $('#progressStatus');
+    if (packet.status === 'loading tesseract core') {
+        setStatus(Math.round(packet.progress*100), 0, 0);
+        progressMessage.text("Loading...");
+    }else if (packet.status === 'initializing api') {
+        setStatus(100, Math.round(packet.progress*100), 0);
+        progressMessage.text("Initializing...");                
+    }else if (packet.status === 'recognizing text') {
+        if(packet.progress < 1){
+            progressMessage.text("Recognizing...");                        
+        }else{
+            progressMessage.text("Completed!");
+            var progressSection = $('#progressSection');
+            setTimeout(function(){
+                progressSection.collapse('hide');
+            }, 300);
+        }
+        setStatus(100, 100, Math.round(packet.progress*100));
+    }
     var log = document.getElementById('log');
     if (log.firstChild && log.firstChild.status === packet.status) {
         if ('progress' in packet) {
@@ -27,6 +46,13 @@ function progressUpdate(packet) {
         log.insertBefore(line, log.firstChild)
     }
 }
+
+function setStatus(loading, initializing, recognizing) {
+    $("#progressLoading").css("width", Math.round((loading/100)*15) + "%");
+    $("#progressInitializing").css("width", Math.round((initializing/100)*30) + "%");
+    $("#progressRecognizing").css("width", Math.round((recognizing/100)*55) + "%");
+}
+
 function recognizeFile(file) {
     displayImage(file);
     document.querySelector("#log").innerHTML = '';
@@ -35,7 +61,9 @@ function recognizeFile(file) {
 
     // return;
     Tesseract.recognize(file, {
-        lang: document.querySelector('#langsel').value
+        // lang: document.querySelector('#langsel').value
+        lang: 'eng'
+        
     })
         .progress(function (packet) {
             console.info(packet)
@@ -54,9 +82,12 @@ function displayImage(file) {
     reader.onload = function (e) {
         $('#image').css('display', '')
         $('#image')
-            .attr('src', e.target.result)
-            // .width(100)
-            // .height(200);
+        .attr('src', e.target.result)
+        $('#imageSection').collapse();
+        $('#progressSection').collapse('show');
+        
+        // .width(100)
+        // .height(200);
     };
 
     reader.readAsDataURL(file);

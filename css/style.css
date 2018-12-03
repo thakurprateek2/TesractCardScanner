@@ -37,3 +37,8 @@ progress[value="1"] {
     max-height: 300px;
     margin: auto;
 }
+
+.progress-message{
+    margin-bottom: 5px;
+    margin-top: 10px;
+}
